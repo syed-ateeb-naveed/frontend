@@ -1,9 +1,9 @@
 import { Dialog, Transition } from "@headlessui/react"
-import { Fragment, useState } from "react"
+import { Fragment, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
-import { updateRequestStatus } from "@/app/actions"
+import { updateRequestStatus, getWorkerInventory } from "@/app/actions"
 
 interface RequestDetailsModalProps {
   isOpen: boolean
@@ -21,16 +21,33 @@ export default function RequestDetailsModal({
   const [isUpdating, setIsUpdating] = useState(false)
   const [declineReason, setDeclineReason] = useState("")
   const [showDeclineReason, setShowDeclineReason] = useState(false)
+  const [inventory, setInventory] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      const data = await getWorkerInventory()
+      setInventory(data)
+    }
+    if (isOpen) {
+      fetchInventory()
+    }
+  }, [isOpen])
 
   if (!request) return null
 
-  const canUpdateStatus = request.status !== "declined" && request.status !== "completed"
+  const canUpdateStatus = request.status !== "declined" && request.status !== "fulfilled"
+  const canApprove = inventory && inventory.units_available >= request.units_required
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!canUpdateStatus) return
 
     if (newStatus === "declined" && !showDeclineReason) {
       setShowDeclineReason(true)
+      return
+    }
+
+    if (newStatus === "approved" && !canApprove) {
+      toast.error("Not enough blood units available to approve this request")
       return
     }
 
@@ -65,7 +82,7 @@ export default function RequestDetailsModal({
           <div className="flex gap-2">
             <Button
               onClick={() => handleStatusUpdate("approved")}
-              disabled={isUpdating}
+              disabled={isUpdating || !canApprove}
               className="bg-green-500 hover:bg-green-600"
             >
               Approve
@@ -155,6 +172,19 @@ export default function RequestDetailsModal({
                       <p>Status: {request.status}</p>
                     </div>
                   </div>
+
+                  {inventory && request.status === "pending" && (
+                    <div>
+                      <h4 className="font-semibold text-white">Inventory Status</h4>
+                      <div className="mt-2 space-y-2 text-gray-300">
+                        <p>Available Units: {inventory.units_available}</p>
+                        <p>Required Units: {request.units_required}</p>
+                        {!canApprove && (
+                          <p className="text-red-400">Not enough units available to approve this request</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {showDeclineReason && (
                     <div>

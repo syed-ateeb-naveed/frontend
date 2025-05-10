@@ -429,3 +429,16 @@ export async function getWorkerRequestsByStatus(status: string) {
   }
 }
 
+export async function getWorkerInventory() {
+  try {
+    const response = await fetchWithToken(`${API_URL}/worker/inventory/`)
+    if (response.ok) {
+      return await response.json()
+    }
+    return null
+  } catch (error) {
+    console.error("Error fetching worker inventory:", error)
+    return null
+  }
+}
+
