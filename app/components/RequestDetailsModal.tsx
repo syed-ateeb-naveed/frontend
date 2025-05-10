@@ -1,18 +1,107 @@
 import { Dialog, Transition } from "@headlessui/react"
-import { Fragment } from "react"
+import { Fragment, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
+import { updateRequestStatus } from "@/app/actions"
 
 interface RequestDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   request: any
+  onStatusUpdate: () => void
 }
 
 export default function RequestDetailsModal({
   isOpen,
   onClose,
   request,
+  onStatusUpdate,
 }: RequestDetailsModalProps) {
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [declineReason, setDeclineReason] = useState("")
+  const [showDeclineReason, setShowDeclineReason] = useState(false)
+
   if (!request) return null
+
+  const canUpdateStatus = request.status !== "declined" && request.status !== "completed"
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!canUpdateStatus) return
+
+    if (newStatus === "declined" && !showDeclineReason) {
+      setShowDeclineReason(true)
+      return
+    }
+
+    try {
+      setIsUpdating(true)
+      const result = await updateRequestStatus(
+        request.id,
+        newStatus,
+        newStatus === "declined" ? declineReason : undefined
+      )
+
+      if (result.success) {
+        toast.success("Request status updated successfully")
+        onStatusUpdate()
+        onClose()
+      } else {
+        toast.error(result.error || "Failed to update request status")
+      }
+    } catch (error) {
+      toast.error("An error occurred while updating the request status")
+    } finally {
+      setIsUpdating(false)
+      setShowDeclineReason(false)
+      setDeclineReason("")
+    }
+  }
+
+  const getAvailableStatusUpdates = () => {
+    switch (request.status?.toLowerCase()) {
+      case "pending":
+        return (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleStatusUpdate("approved")}
+              disabled={isUpdating}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              Approve
+            </Button>
+            <Button
+              onClick={() => handleStatusUpdate("declined")}
+              disabled={isUpdating}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Decline
+            </Button>
+          </div>
+        )
+      case "approved":
+        return (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleStatusUpdate("fulfilled")}
+              disabled={isUpdating}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              Mark as Fulfilled
+            </Button>
+            <Button
+              onClick={() => handleStatusUpdate("declined")}
+              disabled={isUpdating}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Decline
+            </Button>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -66,16 +155,52 @@ export default function RequestDetailsModal({
                       <p>Status: {request.status}</p>
                     </div>
                   </div>
+
+                  {showDeclineReason && (
+                    <div>
+                      <h4 className="font-semibold text-white mb-2">Decline Reason</h4>
+                      <Textarea
+                        value={declineReason}
+                        onChange={(e) => setDeclineReason(e.target.value)}
+                        placeholder="Enter reason for declining the request..."
+                        className="bg-gray-800 text-white border-gray-700"
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={() => handleStatusUpdate("declined")}
+                          disabled={isUpdating || !declineReason.trim()}
+                          className="bg-red-500 hover:bg-red-600"
+                        >
+                          Confirm Decline
+                        </Button>
+                        <Button
+                          onClick={() => setShowDeclineReason(false)}
+                          variant="outline"
+                          className="bg-gray-700 text-white hover:bg-gray-600"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {canUpdateStatus && !showDeclineReason && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-white mb-2">Update Status</h4>
+                      {getAvailableStatusUpdates()}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6">
-                  <button
+                  <Button
                     type="button"
-                    className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                    variant="outline"
+                    className="bg-gray-700 text-white hover:bg-gray-600"
                     onClick={onClose}
                   >
                     Close
-                  </button>
+                  </Button>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

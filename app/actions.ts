@@ -386,3 +386,46 @@ export async function updateDonationStatus(
   }
 }
 
+export async function updateRequestStatus(
+  requestId: number,
+  status: string,
+  declineReason?: string
+) {
+  try {
+    const body: any = { status }
+    
+    if (declineReason) {
+      body.decline_reason = declineReason
+    }
+
+    const response = await fetchWithToken(`${API_URL}/worker/request/${requestId}/`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    })
+
+    if (response.ok) {
+      return { success: true, data: await response.json() }
+    } else {
+      const errorData = await response.json()
+      return { success: false, error: errorData.message || "Failed to update request status" }
+    }
+  } catch (error) {
+    console.error("Error updating request status:", error)
+    return { success: false, error: "An unexpected error occurred" }
+  }
+}
+
+export async function getWorkerRequestsByStatus(status: string) {
+  try {
+    const response = await fetchWithToken(`${API_URL}/worker/requests/${status}/`)
+    if (response.ok) {
+      const data = await response.json()
+      return data.results || []
+    }
+    return []
+  } catch (error) {
+    console.error("Error fetching worker requests by status:", error)
+    return []
+  }
+}
+
