@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { getWorkerDonations, getWorkerDonationDetails, getWorkerDonationsByStatus } from "@/app/actions"
 import { Badge } from "@/components/ui/badge"
-import { Hash, Calendar, Clock, MapPin, Activity } from "lucide-react"
+import { Hash, Calendar, Clock, MapPin, Droplet, Check, X, Pause, Play } from "lucide-react"
 import { format } from "date-fns"
 import DonationDetailsModal from "@/app/components/DonationDetailsModal"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -69,14 +69,29 @@ export default function WorkerDonationsPage() {
     switch (status?.toLowerCase()) {
       case "pending":
         return "bg-yellow-500"
-      case "approved":
-        return "bg-green-500"
-      case "rejected":
-        return "bg-red-500"
-      case "completed":
+      case "scheduled":
         return "bg-blue-500"
+      case "completed":
+        return "bg-green-500"
+      case "cancelled":
+        return "bg-red-500"
       default:
         return "bg-gray-500"
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return <Pause className="w-6 h-6" />
+      case "scheduled":
+        return <Play className="w-6 h-6" />
+      case "completed":
+        return <Check className="w-6 h-6" />
+      case "cancelled":
+        return <X className="w-6 h-6" />
+      default:
+        return <Hash className="w-6 h-6" />
     }
   }
 
@@ -144,7 +159,7 @@ export default function WorkerDonationsPage() {
 
                   <div className="flex items-center space-x-4 text-white">
                     <div className="p-3 bg-red-500/20 rounded-full">
-                      <Activity className="w-6 h-6" />
+                      <Droplet className="w-6 h-6" />
                     </div>
                     <div>
                       <p className="text-sm text-gray-300">Units</p>
@@ -189,7 +204,7 @@ export default function WorkerDonationsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-white">
                       <div className="p-3 bg-red-500/20 rounded-full">
-                        <Activity className="w-6 h-6" />
+                        {getStatusIcon(donation.status)}
                       </div>
                       <div>
                         <p className="text-sm text-gray-300">Status</p>
