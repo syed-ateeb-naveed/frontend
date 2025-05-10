@@ -442,3 +442,30 @@ export async function getWorkerInventory() {
   }
 }
 
+export async function getNotificationCount() {
+  try {
+    const response = await fetchWithToken(`${API_URL}/user/notifications/count`)
+    if (response.ok) {
+      return await response.json()
+    }
+    return { unread_count: 0 }
+  } catch (error) {
+    console.error("Error fetching notification count:", error)
+    return { unread_count: 0 }
+  }
+}
+
+export async function getNotifications() {
+  try {
+    const response = await fetchWithToken(`${API_URL}/user/notifications/`)
+    if (response.ok) {
+      const data = await response.json()
+      return data.results || []
+    }
+    return []
+  } catch (error) {
+    console.error("Error fetching notifications:", error)
+    return []
+  }
+}
+

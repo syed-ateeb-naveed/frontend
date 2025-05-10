@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Check, X, Pause, Play, Droplet, Calendar, Clock, MapPin, Hash } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { getDonations } from "@/app/actions"
 import { Card, CardContent } from "@/components/ui/card"
-import { Droplet, Calendar, Clock, MapPin, Activity, Hash } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { format } from "date-fns"
 import {
   Tooltip,
   TooltipContent,
@@ -25,18 +25,79 @@ export default function MyDonationsPage() {
 
   useEffect(() => {
     const fetchDonations = async () => {
-      const data = await getDonations()
-      setDonations(data)
-      setIsLoading(false)
+      try {
+        setIsLoading(true)
+        const data = await getDonations()
+        setDonations(data || [])
+      } catch (error) {
+        console.error("Error fetching donations:", error)
+        setDonations([])
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     fetchDonations()
   }, [])
 
+  const formatLocation = (location: any) => {
+    if (!location) return "Not specified"
+    return location.name
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return <Pause className="w-6 h-6" />
+      case "scheduled":
+        return <Play className="w-6 h-6" />
+      case "completed":
+        return <Check className="w-6 h-6" />
+      case "cancelled":
+        return <X className="w-6 h-6" />
+      default:
+        return <Hash className="w-6 h-6" />
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return "bg-yellow-500"
+      case "scheduled":
+        return "bg-blue-500"
+      case "completed":
+        return "bg-green-500"
+      case "cancelled":
+        return "bg-red-500"
+      default:
+        return "bg-gray-500"
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-white">My Donations</h1>
+          <Button onClick={() => router.push("/blood/donations/new")} className="bg-red-500 hover:bg-red-600">
+            <Plus className="w-4 h-4 mr-2" />
+            Schedule Donation
+          </Button>
+        </div>
+        <Card className="glass-card bg-white/20">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
-    <div className="container mx-auto mt-20 px-4">
+    <div className="container mx-auto px-4">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Donations</h1>
+        <h1 className="text-3xl font-bold text-white">My Donations</h1>
         <Button onClick={() => router.push("/blood/donations/new")} className="bg-red-500 hover:bg-red-600">
           <Plus className="w-4 h-4 mr-2" />
           Schedule Donation
@@ -44,13 +105,7 @@ export default function MyDonationsPage() {
       </div>
 
       <div className="space-y-6">
-        {isLoading ? (
-          <Card className="glass-card bg-white/20">
-            <CardContent className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-            </CardContent>
-          </Card>
-        ) : donations.length === 0 ? (
+        {donations.length === 0 ? (
           <Card className="glass-card bg-white/20">
             <CardContent className="p-8 text-center text-white">
               <p>You haven't made any donations yet.</p>
@@ -89,7 +144,9 @@ export default function MyDonationsPage() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-300">Date</p>
-                      <p className="text-lg font-semibold">{new Date(donation.date).toLocaleDateString()}</p>
+                      <p className="text-lg font-semibold">
+                        {donation.date ? format(new Date(donation.date), "MMM dd, yyyy") : "N/A"}
+                      </p>
                     </div>
                   </div>
 
@@ -99,7 +156,7 @@ export default function MyDonationsPage() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-300">Time</p>
-                      <p className="text-lg font-semibold">{donation.time}</p>
+                      <p className="text-lg font-semibold">{donation.time || "N/A"}</p>
                     </div>
                   </div>
 
@@ -109,7 +166,23 @@ export default function MyDonationsPage() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-300">Location</p>
-                      <p className="text-lg font-semibold">{donation.location}</p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <a
+                              href={donation.location?.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-lg font-semibold hover:text-red-400 transition-colors"
+                            >
+                              {formatLocation(donation.location)}
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{donation.location?.address}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </div>
@@ -118,21 +191,16 @@ export default function MyDonationsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-white">
                       <div className="p-3 bg-red-500/20 rounded-full">
-                        <Activity className="w-6 h-6" />
+                        {getStatusIcon(donation.status)}
                       </div>
                       <div>
-                      
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Badge 
-                                className={`text-base px-3 py-1 select-none ${
-                                  new Date(donation.date) > new Date() 
-                                    ? "bg-yellow-500" 
-                                    : "bg-green-500"
-                                }`}
+                                className={`text-base px-3 py-1 select-none ${getStatusColor(donation.status)}`}
                               >
-                                {new Date(donation.date) > new Date() ? "Due" : "Completed"}
+                                {donation.status}
                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent>

@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Pause, Play, Check, X, Droplet, Calendar, Hash } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { getBloodRequests } from "@/app/actions"
 import { Card, CardContent } from "@/components/ui/card"
-import { Droplet, Calendar, Hash, Activity } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 
@@ -39,13 +38,28 @@ export default function MyBloodRequestsPage() {
       case "pending":
         return "bg-yellow-500"
       case "approved":
-        return "bg-green-500"
-      case "rejected":
-        return "bg-red-500"
-      case "completed":
         return "bg-blue-500"
+      case "fulfilled":
+        return "bg-green-500"
+      case "declined":
+        return "bg-red-500"
       default:
         return "bg-gray-500"
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return <Pause className="w-6 h-6" />
+      case "approved":
+        return <Play className="w-6 h-6" />
+      case "fulfilled":
+        return <Check className="w-6 h-6" />
+      case "declined":
+        return <X className="w-6 h-6" />
+      default:
+        return <Hash className="w-6 h-6" />
     }
   }
 
@@ -99,7 +113,7 @@ export default function MyBloodRequestsPage() {
 
                   <div className="flex items-center space-x-4 text-white">
                     <div className="p-3 bg-red-500/20 rounded-full">
-                      <Activity className="w-6 h-6" />
+                      <Hash className="w-6 h-6" />
                     </div>
                     <div>
                       <p className="text-sm text-gray-300">Units Required</p>
@@ -124,7 +138,7 @@ export default function MyBloodRequestsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-white">
                       <div className="p-3 bg-red-500/20 rounded-full">
-                        <Activity className="w-6 h-6" />
+                        {getStatusIcon(request.status)}
                       </div>
                       <div>
                         <p className="text-sm text-gray-300">Status</p>
