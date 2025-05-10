@@ -9,6 +9,7 @@ import { useAuth } from "@/app/contexts/auth-context"
 import { useEffect, useState } from "react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
+import * as SheetPrimitive from "@radix-ui/react-dialog"
 
 interface Notification {
   id: number
@@ -84,30 +85,36 @@ export function Navbar1() {
             )}
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[400px] bg-white/10 backdrop-blur-lg border-l border-white/20">
-          <SheetHeader>
-            <SheetTitle className="text-white">Notifications</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6 space-y-4">
-            {notifications.length === 0 ? (
-              <p className="text-white/70 text-center">No notifications</p>
-            ) : (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 rounded-lg ${
-                    notification.is_read ? 'bg-white/5' : 'bg-white/10'
-                  }`}
-                >
-                  <p className="text-white">{notification.message}</p>
-                  <p className="text-sm text-white/50 mt-2">
-                    {new Date(notification.created_at).toLocaleString()}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </SheetContent>
+        <SheetPrimitive.Portal>
+          <SheetPrimitive.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <SheetContent 
+            side="right" 
+            className="w-[400px] bg-white/10 backdrop-blur-lg border-l border-white/20"
+          >
+            <SheetHeader>
+              <SheetTitle className="text-white">Notifications</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 space-y-4">
+              {notifications.length === 0 ? (
+                <p className="text-white/70 text-center">No notifications</p>
+              ) : (
+                notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-4 rounded-lg ${
+                      notification.is_read ? 'bg-white/5' : 'bg-white/10'
+                    }`}
+                  >
+                    <p className="text-white">{notification.message}</p>
+                    <p className="text-sm text-white/50 mt-2">
+                      {new Date(notification.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </SheetContent>
+        </SheetPrimitive.Portal>
       </Sheet>
     )
 
