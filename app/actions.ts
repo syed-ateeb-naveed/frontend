@@ -3,7 +3,9 @@
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://blood-bank-production-60a7.up.railway.app"
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://blood-bank-9umh.onrender.com"
 
 async function fetchWithToken(url: string, options: RequestInit = {}) {
   const cookieStore = await cookies(); // Awaiting inside server action
