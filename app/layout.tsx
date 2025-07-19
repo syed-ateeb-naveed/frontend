@@ -6,9 +6,9 @@ import { AuthProvider } from "./contexts/auth-context"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "Blood Bank Management System",
+  title: "LiveDrop",
   description: "Manage blood donations and donors efficiently",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({

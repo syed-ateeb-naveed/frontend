@@ -29,7 +29,7 @@ export function Navbar() {
       <nav className="nav-blur fixed w-full z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-white hover:text-red-400 transition-colors">
-            Blood Bank
+            LiveDrop
           </Link>
         </div>
       </nav>
@@ -40,7 +40,7 @@ export function Navbar() {
     <nav className="nav-blur fixed w-full z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold text-white hover:text-red-400 transition-colors">
-          Blood Bank
+          LiveDrop
         </Link>
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (

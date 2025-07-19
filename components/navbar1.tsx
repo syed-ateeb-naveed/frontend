@@ -66,7 +66,7 @@ export function Navbar1() {
         <nav className="nav-blur fixed w-full z-50">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-white hover:text-red-400 transition-colors">
-              Blood Bank
+              LiveDrop
             </Link>
           </div>
         </nav>
@@ -123,7 +123,7 @@ export function Navbar1() {
       <div className="container mx-auto px-2 py-3 flex items-center justify-between">
         {/* Logo - hidden on mobile */}
         <Link href="/" className="text-2xl font-bold text-white hover:text-red-400 transition-colors hidden md:block">
-          Blood Bank
+          LiveDrop
         </Link>
         
         {/* Mobile navigation - full width, equally spaced */}
@@ -152,9 +152,9 @@ export function Navbar1() {
             <span className="text-xs">Profile</span>
           </Link>
 
-          <div className="flex flex-col items-center">
+          {/* Notification bell, centered and without text */}
+          <div className="flex flex-col items-center justify-center">
             <NotificationBell />
-            <span className="text-xs text-white">Notifications</span>
           </div>
           
           <button
