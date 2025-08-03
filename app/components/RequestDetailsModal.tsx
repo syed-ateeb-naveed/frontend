@@ -25,18 +25,19 @@ export default function RequestDetailsModal({
 
   useEffect(() => {
     const fetchInventory = async () => {
-      const data = await getWorkerInventory()
-      setInventory(data)
+      const allInventory = await getWorkerInventory()
+      // find record matching this request’s blood_type
+      const matching = allInventory.find(inv => inv.blood_group === request.blood_type)
+      setInventory(matching || null)
     }
-    if (isOpen) {
-      fetchInventory()
-    }
-  }, [isOpen])
+    if (isOpen) fetchInventory()
+  }, [isOpen, request])
 
   if (!request) return null
 
   const canUpdateStatus = request.status !== "declined" && request.status !== "fulfilled"
-  const canApprove = inventory && inventory.units_available >= request.units_required
+  const canApprove = inventory !== null
+  && inventory.units_available >= request.units_required
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!canUpdateStatus) return
@@ -180,7 +181,9 @@ export default function RequestDetailsModal({
                         <p>Available Units: {inventory.units_available}</p>
                         <p>Required Units: {request.units_required}</p>
                         {!canApprove && (
-                          <p className="text-red-400">Not enough units available to approve this request</p>
+                            <p className="text-red-400">
+                            Not enough {inventory.blood_group} units available to approve this request
+                          </p>
                         )}
                       </div>
                     </div>
